@@ -491,6 +491,10 @@ bool handle_command(struct vehicle_status_s *status_local, const struct safety_s
 					/* ACRO */
 					main_ret = main_state_transition(status_local, vehicle_status_s::MAIN_STATE_ACRO);
 
+				} else if (custom_main_mode == PX4_CUSTOM_MAIN_MODE_STABILIZED) {
+					/* STABILIZED */
+					main_ret = main_state_transition(status_local, vehicle_status_s::MAIN_STATE_STAB);
+
 				} else if (custom_main_mode == PX4_CUSTOM_MAIN_MODE_OFFBOARD) {
 					/* OFFBOARD */
 					main_ret = main_state_transition(status_local, vehicle_status_s::MAIN_STATE_OFFBOARD);
@@ -508,6 +512,9 @@ bool handle_command(struct vehicle_status_s *status_local, const struct safety_s
 						main_ret = main_state_transition(status_local, vehicle_status_s::MAIN_STATE_POSCTL);
 
 					} else if (base_mode & MAV_MODE_FLAG_STABILIZE_ENABLED) {
+						/* STABILIZED */
+						main_ret = main_state_transition(status_local, vehicle_status_s::MAIN_STATE_STAB);
+					} else {
 						/* MANUAL */
 						main_ret = main_state_transition(status_local, vehicle_status_s::MAIN_STATE_MANUAL);
 					}
@@ -831,6 +838,7 @@ int commander_thread_main(int argc, char *argv[])
 	main_states_str[vehicle_status_s::MAIN_STATE_AUTO_LOITER]			= "AUTO_LOITER";
 	main_states_str[vehicle_status_s::MAIN_STATE_AUTO_RTL]			= "AUTO_RTL";
 	main_states_str[vehicle_status_s::MAIN_STATE_ACRO]			= "ACRO";
+	main_states_str[vehicle_status_s::MAIN_STATE_STAB]			= "STAB";
 	main_states_str[vehicle_status_s::MAIN_STATE_OFFBOARD]			= "OFFBOARD";
 
 	const char *arming_states_str[vehicle_status_s::ARMING_STATE_MAX];
@@ -844,6 +852,7 @@ int commander_thread_main(int argc, char *argv[])
 
 	const char *nav_states_str[vehicle_status_s::NAVIGATION_STATE_MAX];
 	nav_states_str[vehicle_status_s::NAVIGATION_STATE_MANUAL]			= "MANUAL";
+	nav_states_str[vehicle_status_s::NAVIGATION_STATE_STAB]				= "STAB";
 	nav_states_str[vehicle_status_s::NAVIGATION_STATE_ALTCTL]			= "ALTCTL";
 	nav_states_str[vehicle_status_s::NAVIGATION_STATE_POSCTL]			= "POSCTL";
 	nav_states_str[vehicle_status_s::NAVIGATION_STATE_AUTO_MISSION]		= "AUTO_MISSION";
@@ -1710,7 +1719,10 @@ int commander_thread_main(int argc, char *argv[])
 			 * do it only for rotary wings */
 			if (status.is_rotary_wing &&
 			    (status.arming_state == vehicle_status_s::ARMING_STATE_ARMED || status.arming_state == vehicle_status_s::ARMING_STATE_ARMED_ERROR) &&
-			    (status.main_state == vehicle_status_s::MAIN_STATE_MANUAL || status.main_state == vehicle_status_s::MAIN_STATE_ACRO || status.condition_landed) &&
+			    (status.main_state == vehicle_status_s::MAIN_STATE_MANUAL ||
+			    	status.main_state == vehicle_status_s::MAIN_STATE_ACRO ||
+			    	status.main_state == vehicle_status_s::MAIN_STATE_STAB ||
+			    	status.condition_landed) &&
 			    sp_man.r < -STICK_ON_OFF_LIMIT && sp_man.z < 0.1f) {
 
 				if (stick_off_counter > STICK_ON_OFF_COUNTER_LIMIT) {
@@ -1743,7 +1755,8 @@ int commander_thread_main(int argc, char *argv[])
 					 * for being in manual mode only applies to manual arming actions.
 					 * the system can be armed in auto if armed via the GCS.
 					 */
-					if (status.main_state !=vehicle_status_s::MAIN_STATE_MANUAL) {
+					if ((status.main_state != vehicle_status_s::MAIN_STATE_MANUAL) ||
+						(status.main_state != vehicle_status_s::MAIN_STATE_STAB)) {
 						print_reject_arm("NOT ARMING: Switch to MANUAL mode first.");
 
 					} else {
@@ -1912,6 +1925,7 @@ int commander_thread_main(int argc, char *argv[])
 			 * and both failed we want to terminate the flight */
 			if (status.main_state !=vehicle_status_s::MAIN_STATE_MANUAL &&
 			    status.main_state !=vehicle_status_s::MAIN_STATE_ACRO &&
+			    status.main_state !=vehicle_status_s::MAIN_STATE_STAB &&
 			    status.main_state !=vehicle_status_s::MAIN_STATE_ALTCTL &&
 			    status.main_state !=vehicle_status_s::MAIN_STATE_POSCTL &&
 			    ((status.data_link_lost && status.gps_failure) ||
@@ -1936,6 +1950,7 @@ int commander_thread_main(int argc, char *argv[])
 			 * if both failed we want to terminate the flight */
 			if ((status.main_state ==vehicle_status_s::MAIN_STATE_ACRO ||
 			     status.main_state ==vehicle_status_s::MAIN_STATE_MANUAL ||
+			     status.main_state !=vehicle_status_s::MAIN_STATE_STAB ||
 			     status.main_state ==vehicle_status_s::MAIN_STATE_ALTCTL ||
 			     status.main_state ==vehicle_status_s::MAIN_STATE_POSCTL) &&
 			    ((status.rc_signal_lost && status.gps_failure) ||
@@ -2261,6 +2276,9 @@ set_main_state_rc(struct vehicle_status_s *status_local, struct manual_control_s
 
 	case manual_control_setpoint_s::SWITCH_POS_OFF:		// MANUAL
 		if (sp_man->acro_switch == manual_control_setpoint_s::SWITCH_POS_ON) {
+			res = main_state_transition(status_local,vehicle_status_s::MAIN_STATE_STAB);
+
+		} else if (sp_man->acro_switch == manual_control_setpoint_s::SWITCH_POS_MIDDLE) {
 			res = main_state_transition(status_local,vehicle_status_s::MAIN_STATE_ACRO);
 
 		} else {
@@ -2365,6 +2383,18 @@ set_control_mode()
 		control_mode.flag_control_auto_enabled = false;
 		control_mode.flag_control_rates_enabled = (status.is_rotary_wing || status.vtol_fw_permanent_stab);
 		control_mode.flag_control_attitude_enabled = (status.is_rotary_wing || status.vtol_fw_permanent_stab);
+		control_mode.flag_control_altitude_enabled = false;
+		control_mode.flag_control_climb_rate_enabled = false;
+		control_mode.flag_control_position_enabled = false;
+		control_mode.flag_control_velocity_enabled = false;
+		control_mode.flag_control_termination_enabled = false;
+		break;
+
+	case vehicle_status_s::NAVIGATION_STATE_STAB:
+		control_mode.flag_control_manual_enabled = true;
+		control_mode.flag_control_auto_enabled = false;
+		control_mode.flag_control_rates_enabled = true;
+		control_mode.flag_control_attitude_enabled = true;
 		control_mode.flag_control_altitude_enabled = false;
 		control_mode.flag_control_climb_rate_enabled = false;
 		control_mode.flag_control_position_enabled = false;
