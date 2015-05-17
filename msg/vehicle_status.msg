@@ -7,7 +7,8 @@ uint8 MAIN_STATE_AUTO_LOITER = 4
 uint8 MAIN_STATE_AUTO_RTL = 5
 uint8 MAIN_STATE_ACRO = 6
 uint8 MAIN_STATE_OFFBOARD = 7
-uint8 MAIN_STATE_MAX = 8
+uint8 MAIN_STATE_STAB = 8
+uint8 MAIN_STATE_MAX = 9
 
 # If you change the order, add or remove arming_state_t states make sure to update the arrays
 # in state_machine_helper.cpp as well.
