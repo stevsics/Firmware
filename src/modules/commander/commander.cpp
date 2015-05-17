@@ -1755,7 +1755,7 @@ int commander_thread_main(int argc, char *argv[])
 					 * for being in manual mode only applies to manual arming actions.
 					 * the system can be armed in auto if armed via the GCS.
 					 */
-					if ((status.main_state != vehicle_status_s::MAIN_STATE_MANUAL) ||
+					if ((status.main_state != vehicle_status_s::MAIN_STATE_MANUAL) &&
 						(status.main_state != vehicle_status_s::MAIN_STATE_STAB)) {
 						print_reject_arm("NOT ARMING: Switch to MANUAL mode first.");
 
