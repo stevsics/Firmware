@@ -55,6 +55,9 @@
 #include "topics/rc_channels.h"
 #include "topics/vehicle_control_mode.h"
 #include "topics/actuator_armed.h"
+#include "topics/vehicle_force_setpoint.h"
+#include "topics/vehicle_vicon_position.h"
+#include "drivers/drv_accel.h"
 
 namespace uORB
 {
@@ -99,5 +102,9 @@ template class __EXPORT Subscription<vehicle_rates_setpoint_s>;
 template class __EXPORT Subscription<rc_channels_s>;
 template class __EXPORT Subscription<vehicle_control_mode_s>;
 template class __EXPORT Subscription<actuator_armed_s>;
+template class __EXPORT Subscription<vehicle_vicon_position_s>;
+template class __EXPORT Subscription<accel_report>;
+template class __EXPORT Subscription<vehicle_force_setpoint_s>;
+
 
 } // namespace uORB

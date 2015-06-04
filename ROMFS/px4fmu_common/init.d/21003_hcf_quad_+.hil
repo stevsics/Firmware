@@ -1,0 +1,15 @@
+#!nsh
+#
+# HIL Quadcopter +
+#
+# Anton Babushkin <anton.babushkin@me.com>
+#
+
+sh /etc/init.d/rc.mc_defaults
+
+set MIXER FMU_quad_+
+
+set HIL yes
+
+set LOAD_DEFAULT_APPS no
+set HCF yes

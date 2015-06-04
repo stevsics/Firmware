@@ -50,6 +50,8 @@
 #include "topics/encoders.h"
 #include "topics/tecs_status.h"
 #include "topics/rc_channels.h"
+#include "topics/position_setpoint_triplet.h"
+#include "topics/vehicle_force_setpoint.h"
 
 namespace uORB {
 
@@ -90,5 +92,7 @@ template class __EXPORT Publication<actuator_direct_s>;
 template class __EXPORT Publication<encoders_s>;
 template class __EXPORT Publication<tecs_status_s>;
 template class __EXPORT Publication<rc_channels_s>;
+template class __EXPORT Publication<position_setpoint_triplet_s>;
+template class __EXPORT Publication<vehicle_force_setpoint_s>;
 
 }

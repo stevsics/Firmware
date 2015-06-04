@@ -294,3 +294,75 @@ then
 	sh /etc/init.d/50001_axialracing_ax10
 fi
 
+#
+# HCF IMU
+#
+
+if param compare SYS_AUTOSTART 20000
+then
+	sh /etc/init.d/20000_hcf_imu
+fi
+
+#
+# HCF AR.Drone
+#
+
+if param compare SYS_AUTOSTART 20001
+then
+	sh /etc/init.d/20001_hcf_ardrone
+fi
+
+#
+# HCF AR.Drone Outdoor
+#
+
+if param compare SYS_AUTOSTART 20011
+then
+	sh /etc/init.d/20011_hcf_ardrone_outdoor
+fi
+
+#
+# HCF AR.Drone MiniMax Scenario
+#
+
+if param compare SYS_AUTOSTART 20002
+then
+	sh /etc/init.d/20002_hcf_ardrone_minimax
+fi
+
+#
+# HCF Headtracker
+#
+
+if param compare SYS_AUTOSTART 20003
+then
+	sh /etc/init.d/20003_hcf_headtracker
+fi
+
+#
+# HCF H Frame MiniMax Scenario
+#
+
+if param compare SYS_AUTOSTART 20004
+then
+	sh /etc/init.d/20004_hcf_quad
+fi
+
+#
+# HCF Bodytracker
+#
+
+if param compare SYS_AUTOSTART 20005
+then
+	sh /etc/init.d/20005_hcf_bodytracker
+fi
+
+#
+# HCF Bodytracker
+#
+
+if param compare SYS_AUTOSTART 21003
+then
+	sh /etc/init.d/21003_hcf_quad_+.hil
+fi
+
