@@ -42,10 +42,11 @@
  *  @author Tobias Naegeli <naegelit@student.ethz.ch>
  */
 
-#include <px4_config.h>
+/* Remove frame size error. */
+//#pragma GCC diagnostic ignored "-Werror=frame-larger-than="
+
+#include <nuttx/config.h>
 #include <px4_defines.h>
-#include <px4_tasks.h>
-#include <px4_posix.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -115,7 +116,7 @@ int mc_pos_control_hcf_main(int argc, char *argv[])
 		thread_should_exit = false;
 
 		warnx("task spawn");
-		daemon_task = px4_task_spawn_cmd("mc_pos_control_hcf",
+		daemon_task = task_spawn_cmd("mc_pos_control_hcf",
 					     SCHED_DEFAULT,
 					     SCHED_PRIORITY_MAX - 30,
 					     6500,

@@ -46,7 +46,7 @@
 
 #include "mc_att_control_hcf.h"
 
-#include <px4_config.h>
+#include <nuttx/config.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
