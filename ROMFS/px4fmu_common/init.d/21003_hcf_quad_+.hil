@@ -11,5 +11,5 @@ set MIXER FMU_quad_+
 
 set HIL yes
 
-set LOAD_DEFAULT_APPS no
+set LOAD_DAPPS no
 set HCF yes

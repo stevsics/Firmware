@@ -67,11 +67,13 @@
 #include <uORB/topics/airspeed.h>
 #include <uORB/topics/battery_status.h>
 #include <uORB/topics/navigation_capabilities.h>
+#include <uORB/topics/vehicle_force_setpoint.h>
 #include <drivers/drv_rc_input.h>
 #include <drivers/drv_pwm_output.h>
 #include <drivers/drv_range_finder.h>
 #include <systemlib/err.h>
 #include <mavlink/mavlink_log.h>
+
 
 #include "mavlink_messages.h"
 #include "mavlink_main.h"
@@ -2250,6 +2252,81 @@ protected:
 	}
 };
 
+/* Remove floating point error. */
+#pragma GCC diagnostic ignored "-Wfloat-equal"
+
+class MavlinkStreamForceSetpoint : public MavlinkStream
+{
+public:
+	const char *get_name() const
+	{
+		return MavlinkStreamForceSetpoint::get_name_static();
+	}
+
+	static const char *get_name_static()
+	{
+		return "FORCE_SETPOINT";
+	}
+
+	uint8_t get_id()
+	{
+		return MAVLINK_MSG_ID_SET_CONTROL_TARGET_LOCAL_NED;
+	}
+
+	static MavlinkStream *new_instance(Mavlink *mavlink)
+	{
+		return new MavlinkStreamForceSetpoint(mavlink);
+	}
+
+	unsigned get_size()
+	{
+		return MAVLINK_MSG_ID_SET_CONTROL_TARGET_LOCAL_NED_LEN + MAVLINK_NUM_NON_PAYLOAD_BYTES;
+	}
+
+	bool const_rate() {
+		return true;
+	}
+
+private:
+	MavlinkOrbSubscription *_force_sp_sub;
+
+	/* do not allow top copying this class */
+	MavlinkStreamForceSetpoint(MavlinkStreamForceSetpoint &);
+	MavlinkStreamForceSetpoint& operator = (const MavlinkStreamForceSetpoint &);
+
+protected:
+	explicit MavlinkStreamForceSetpoint(Mavlink *mavlink) : MavlinkStream(mavlink),
+		_force_sp_sub(_mavlink->add_orb_subscription(ORB_ID(vehicle_force_setpoint)))
+	{}
+
+	void send(const hrt_abstime t)
+	{
+		//struct vehicle_status_s status;
+		//struct position_setpoint_triplet_s pos_sp_triplet;
+		struct vehicle_force_setpoint_s	force_sp;
+
+		if (_force_sp_sub->update(&force_sp)) {
+
+			mavlink_set_control_target_local_ned_t msg;
+
+			msg.x = force_sp.x;
+			msg.y = force_sp.y;
+			msg.z = force_sp.z;
+			if(force_sp.yaw != float(0.0))
+			{
+				msg.yaw = force_sp.yaw;
+			}
+			else
+			{
+				msg.yaw = force_sp.yaw_rate;
+			}
+
+			_mavlink->send_message(MAVLINK_MSG_ID_SET_CONTROL_TARGET_LOCAL_NED, &msg);
+		}
+	}
+};
+
+
 
 const StreamListItem *streams_list[] = {
 	new StreamListItem(&MavlinkStreamHeartbeat::new_instance, &MavlinkStreamHeartbeat::get_name_static),
@@ -2285,5 +2362,6 @@ const StreamListItem *streams_list[] = {
 	new StreamListItem(&MavlinkStreamNamedValueFloat::new_instance, &MavlinkStreamNamedValueFloat::get_name_static),
 	new StreamListItem(&MavlinkStreamCameraCapture::new_instance, &MavlinkStreamCameraCapture::get_name_static),
 	new StreamListItem(&MavlinkStreamDistanceSensor::new_instance, &MavlinkStreamDistanceSensor::get_name_static),
+	new StreamListItem(&MavlinkStreamForceSetpoint::new_instance, &MavlinkStreamForceSetpoint::get_name_static),
 	nullptr
 };

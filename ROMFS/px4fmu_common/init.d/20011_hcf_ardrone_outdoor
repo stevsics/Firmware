@@ -11,7 +11,7 @@ sh /etc/init.d/rc.mc_defaults
 #
 # Load default params for this platform
 #
-if [ $DO_AUTOCONFIG == yes ]
+if [ $AUTOCNF == yes ]
 then
     # Set all params here, then disable autoconfig
     param set MC_ROLL_P 5.0
@@ -36,7 +36,7 @@ set MIXER skip
 # set MAV_TYPE because no specific mixer is set
 set MAV_TYPE 2
 
-set LOAD_DEFAULT_APPS no
+set LOAD_DAPPS no
 set HCF yes
 
 # higher baudrate for lairdtech on serial 1

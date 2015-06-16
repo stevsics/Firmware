@@ -1,7 +1,10 @@
 echo "[hcf] start onboard mavlink"
+#mavlink stop-all
+usleep 10000
 mavlink start -m custom -d /dev/ttyS2 -b 230400
 mavlink stream -d /dev/ttyS2 -s HIGHRES_IMU -r 200
-mavlink stream -d /dev/ttyS2 -s ATTITUDE_R -r 30
+#mavlink stream -d /dev/ttyS2 -s ATTITUDE_R -r 30
+mavlink stream -d /dev/ttyS2 -s FORCE_SETPOINT -r 30
 usleep 10000
 
 # more data output for the normal mavlink

@@ -19,6 +19,7 @@ mavlink stream -d /dev/ttyACM0 -s LOCAL_POSITION_NED -r 30
 mavlink stream -d /dev/ttyACM0 -s MANUAL_CONTROL -r 5
 mavlink stream -d /dev/ttyACM0 -s HIGHRES_IMU -r 20
 mavlink stream -d /dev/ttyACM0 -s GPS_RAW_INT -r 20
+mavlink stream -d /dev/ttyACM0 -s FORCE_SETPOINT -r 30
 
 # Exit shell to make it available to MAVLink
 exit

@@ -217,10 +217,14 @@ PCA9685::init()
 		return ret;
 	}
 
+	warnx("IC2 init OK!");
+
 	ret = reset();
 	if (ret != OK) {
 		return ret;
 	}
+
+	warnx("reset OK!");
 
 	ret = setPWMFreq(PCA9685_PWMFREQ);
 
@@ -424,26 +428,29 @@ PCA9685::setPWMFreq(float freq)
 	}
 	uint8_t newmode = (oldmode&0x7F) | 0x10; // sleep
 
+	warnx("read1");
 	ret = write8(PCA9685_MODE1, newmode); // go to sleep
 	if (ret != OK) {
 		return ret;
 	}
+	warnx("write1");
 	ret = write8(PCA9685_PRESCALE, prescale); // set the prescaler
 	if (ret != OK) {
 		return ret;
 	}
+	warnx("write2");
 	ret = write8(PCA9685_MODE1, oldmode);
 	if (ret != OK) {
 		return ret;
 	}
-
+	warnx("write3");
 	usleep(5000); //5ms delay (from arduino driver)
 
 	ret = write8(PCA9685_MODE1, oldmode | 0xa1);  //  This sets the MODE1 register to turn on auto increment.
 	if (ret != OK) {
 		return ret;
 	}
-
+	warnx("write4");
 	return ret;
 }
 
@@ -543,10 +550,15 @@ pca9685_main(int argc, char *argv[])
 			errx(1, "already started");
 		}
 
+		warnx("la la la la la");
+
 		if (i2cdevice == -1) {
 			// try the external bus first
 			i2cdevice = PX4_I2C_BUS_EXPANSION;
 			g_pca9685 = new PCA9685(PX4_I2C_BUS_EXPANSION, i2caddr);
+
+			if (g_pca9685 == nullptr)
+				warnx("memory not alocated!");
 
 			if (g_pca9685 != nullptr && OK != g_pca9685->init()) {
 				delete g_pca9685;
@@ -554,7 +566,7 @@ pca9685_main(int argc, char *argv[])
 			}
 
 			if (g_pca9685 == nullptr) {
-				errx(1, "init failed");
+				errx(1, "init failed 1");
 			}
 		}
 
@@ -568,7 +580,7 @@ pca9685_main(int argc, char *argv[])
 			if (OK != g_pca9685->init()) {
 				delete g_pca9685;
 				g_pca9685 = nullptr;
-				errx(1, "init failed");
+				errx(1, "init failed 2");
 			}
 		}
 		fd = open(PCA9685_DEVICE_PATH, 0);

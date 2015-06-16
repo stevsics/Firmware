@@ -187,6 +187,7 @@ I2C::transfer(const uint8_t *send, unsigned send_len, uint8_t *recv, unsigned re
 	int ret;
 	unsigned retry_count = 0;
 
+
 	do {
 		//	debug("transfer out %p/%u  in %p/%u", send, send_len, recv, recv_len);
 

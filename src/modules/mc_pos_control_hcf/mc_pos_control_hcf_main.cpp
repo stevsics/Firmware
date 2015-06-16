@@ -42,8 +42,6 @@
  *  @author Tobias Naegeli <naegelit@student.ethz.ch>
  */
 
-/* Remove frame size error. */
-//#pragma GCC diagnostic ignored "-Werror=frame-larger-than="
 
 #include <nuttx/config.h>
 #include <px4_defines.h>
