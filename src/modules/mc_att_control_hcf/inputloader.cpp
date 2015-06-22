@@ -121,8 +121,8 @@ void InputLoader::update()
 			//XXX yaw handle yaw
 			} else {
 				//if (_force_sp.frame == FORCE_SETPOINT_FRAME_BODY_NED) {
-					_forceSpBodyYaw(0)=-_force_sp.x; //-_force_sp.y (Thomas implementation)
-					_forceSpBodyYaw(1)=-_force_sp.y; //_force_sp.x (Thomas implementation)
+					_forceSpBodyYaw(0)=_force_sp.x; //-_force_sp.y (Thomas implementation)
+					_forceSpBodyYaw(1)=_force_sp.y; //_force_sp.x (Thomas implementation)
 					_forceSpBodyYaw(2)=_force_sp.z;
 
 					/* offboard force control */
@@ -142,8 +142,8 @@ void InputLoader::update()
 		} else if (_control_mode.flag_control_force_enabled) {
 
 			//if (_force_sp.frame == FORCE_SETPOINT_FRAME_BODY_NED) {
-				_forceSpBodyYaw(0)=-_force_sp.x; //-_force_sp.y (Thomas implementation)
-				_forceSpBodyYaw(1)=-_force_sp.y; //_force_sp.x (Thomas implementation)
+				_forceSpBodyYaw(0)=_force_sp.x; //-_force_sp.y (Thomas implementation)
+				_forceSpBodyYaw(1)=_force_sp.y; //_force_sp.x (Thomas implementation)
 				_forceSpBodyYaw(2)=_force_sp.z;
 
 				/* offboard force control */

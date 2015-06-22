@@ -111,6 +111,8 @@ void AttitudeController::update(const math::Vector<3> forceSetpointNED,float yaw
 	_attCtlArgs.in.intFreeze = (boolean_T)false;
 	_attCtlArgs.in.intReset = (boolean_T)(intReset);
 
+	//warnx("Gains: P %.2f I %.2f D %.2f YP %.2f YI %.2f YD %.2f \n", double(_Kp.get()),  double(_Ki.get()),  double(_Kd.get()), double(_KpYaw.get()), double(_KiYaw.get()), double(_KdYaw.get()));
+
 	/* Call actual attitude control function */
 	attitudeController(
 		_attCtlArgs.in.R_IB,
@@ -147,7 +149,7 @@ void AttitudeController::update(const math::Vector<3> forceSetpointNED,float yaw
 //
 //				static int counter = 0;
 //				if (counter % 100 == 0) {
-//					//warnx("kx %.3f ky %.3f kz %.3f ", (double)_attCtlArgs.out.rates_des[0], (double) _attCtlArgs.out.rates_des[1],(double)_attCtlArgs.out.rates_des[2]);
+//					warnx("kx %.3f ky %.3f kz %.3f ", (double)_attCtlArgs.out.rates_des[0], (double) _attCtlArgs.out.rates_des[1],(double)_attCtlArgs.out.rates_des[2]);
 //					warnx("desforce %0.3f",(double)_attCtlArgs.out.thrust);
 //				}
 //				counter++;

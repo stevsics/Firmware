@@ -62,6 +62,7 @@
 #include <mathlib/mathlib.h>
 #include <lib/geo/geo.h>
 #include <mavlink/mavlink_log.h>
+#include <uORB/topics/vehicle_attitude.h>
 
 #define SIGMA			0.000001f
 /**
@@ -169,14 +170,44 @@ MulticopterAttitudeControlHcf::update()
 	/* determine if the controller should be run in this iteration */
 	bool run_controller = _control_mode.flag_control_attitude_enabled || _control_mode.flag_control_force_enabled;
 
-	if (run_controller) {
-		/*Attitude Control */
-		_attitudeController.update(_inputLoader.getForceSetpointNED(),_inputLoader.getSetpointYaw(),_inputLoader.getSetpointYawRate() , _att.getData(),
-				(!_was_attcontrol || !_was_armed));
+	bool use_no_yaw = true;//TODO(Stevdza) add by parameter;
 
-		/* Rate control */
-		_rateController.update(_attitudeController.getRatesSp(), _attitudeController.getThrustSp(),
-			math::Vector<3>({_att.rollspeed, _att.pitchspeed, _att.yawspeed}));
+	if(use_no_yaw) {
+
+	}
+
+	if (run_controller) {
+
+		if(use_no_yaw) {
+			//TODO(Stevdza) modify all elements of att_no_yaw
+			vehicle_attitude_s att_no_yaw = _att.getData();
+			att_no_yaw.yaw = 0.0f;
+			math::Matrix<3, 3> R_IB_no_yaw;
+			R_IB_no_yaw.from_euler(att_no_yaw.roll, att_no_yaw.pitch, att_no_yaw.yaw);
+			for(int i=0; i < 3; i++)
+				for(int j=0; j < 3; j++)
+				{
+					att_no_yaw.R[i + 3*j] = R_IB_no_yaw.data[i][j];
+				}
+
+			/*Attitude Control */
+			_attitudeController.update(_inputLoader.getForceSetpointBodyYaw(),_inputLoader.getSetpointYaw(),_inputLoader.getSetpointYawRate() , att_no_yaw,
+					(!_was_attcontrol || !_was_armed));
+
+			/* Rate control */
+			_rateController.update(_attitudeController.getRatesSp(), _attitudeController.getThrustSp(),
+				math::Vector<3>({att_no_yaw.rollspeed, att_no_yaw.pitchspeed, att_no_yaw.yawspeed}));
+		}
+		else {
+			/*Attitude Control */
+			_attitudeController.update(_inputLoader.getForceSetpointNED(),_inputLoader.getSetpointYaw(),_inputLoader.getSetpointYawRate() , _att.getData(),
+					(!_was_attcontrol || !_was_armed));
+
+			/* Rate control */
+			_rateController.update(_attitudeController.getRatesSp(), _attitudeController.getThrustSp(),
+				math::Vector<3>({_att.rollspeed, _att.pitchspeed, _att.yawspeed}));
+		}
+
 
 	}
 
