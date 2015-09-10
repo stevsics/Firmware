@@ -179,7 +179,6 @@ MulticopterAttitudeControlHcf::update()
 	if (run_controller) {
 
 		if(use_no_yaw) {
-			//TODO(Stevdza) modify all elements of att_no_yaw
 			vehicle_attitude_s att_no_yaw = _att.getData();
 			att_no_yaw.yaw = 0.0f;
 			math::Matrix<3, 3> R_IB_no_yaw;

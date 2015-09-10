@@ -5,6 +5,11 @@ mavlink start -m custom -d /dev/ttyS2 -b 230400
 mavlink stream -d /dev/ttyS2 -s HIGHRES_IMU -r 200
 #mavlink stream -d /dev/ttyS2 -s ATTITUDE_R -r 30
 mavlink stream -d /dev/ttyS2 -s FORCE_SETPOINT -r 30
+mavlink stream -d /dev/ttyS2 -s ATTITUDE -r 100
+if [ $GPS == yes ]
+than
+	mavlink stream -d /dev/ttyS2 -s GPS_RAW_INT -r 20
+fi
 usleep 10000
 
 # more data output for the normal mavlink
