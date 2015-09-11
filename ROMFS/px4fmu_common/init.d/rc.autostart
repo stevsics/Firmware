@@ -312,6 +312,16 @@ then
 	sh /etc/init.d/20001_hcf_ardrone
 fi
 
+
+#
+# HCF Solo
+#
+
+if param compare SYS_AUTOSTART 20006
+then
+	sh /etc/init.d/20006_hcf_quad_solo
+fi
+
 #
 # HCF AR.Drone Outdoor
 #

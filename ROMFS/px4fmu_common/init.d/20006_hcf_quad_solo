@@ -1,0 +1,43 @@
+#!nsh
+#
+# Solo
+
+echo "[init] 20006_hcf_quad_solo for HCF"
+
+# Just use the default multicopter settings.
+sh /etc/init.d/rc.mc_defaults
+
+#
+# Load default params for this platform
+#
+if [ $AUTOCNF == yes ]
+then
+    # Set all params here, then disable autoconfig
+    param set MC_ROLL_P 5.0
+    param set MC_ROLLRATE_P 0.13
+    param set MC_ROLLRATE_I 0.0
+    param set MC_ROLLRATE_D 0.0
+    param set MC_PITCH_P 5.0
+    param set MC_PITCHRATE_P 0.13
+    param set MC_PITCHRATE_I 0.0
+    param set MC_PITCHRATE_D 0.0
+    param set MC_YAW_P 1.0
+    param set MC_YAWRATE_P 0.15
+    param set MC_YAWRATE_I 0.0
+    param set MC_YAWRATE_D 0.0
+    param set MC_YAW_FF 0.15
+    param set BAT_V_SCALING 0.00838095238
+fi
+
+set USE_IO no
+set MIXER quad_x
+set PWM_OUT 1234
+set MAVLINK_F no
+
+set LOAD_DAPPS no
+set HCF yes
+set HCF_VICON no
+set GPS no
+
+# set EXIT_ON_END because we set a custom MAVLINK_FLAGS
+set EXIT_ON_END yes

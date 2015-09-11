@@ -470,7 +470,7 @@ then
 		fi
 	fi
 
-	mavlink start $MAVLINK_F
+	#mavlink start $MAVLINK_F  -- HACK TRY TO STOP IT BY SETTING MAVLINK_F TO SOMETHING ELSE
 	unset MAVLINK_F
 
 	#

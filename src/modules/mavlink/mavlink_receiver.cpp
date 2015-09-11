@@ -111,6 +111,7 @@ MavlinkReceiver::MavlinkReceiver(Mavlink *parent) :
 	_range_pub(-1),
 	_offboard_control_mode_pub(-1),
 	_actuator_controls_pub(-1),
+	_actuator_gimbal_controls_pub(-1),
 	_global_vel_sp_pub(-1),
 	_att_sp_pub(-1),
 	_rates_sp_pub(-1),
@@ -185,6 +186,10 @@ MavlinkReceiver::handle_message(mavlink_message_t *msg)
 	case MAVLINK_MSG_ID_SET_ACTUATOR_CONTROL_TARGET:
 		handle_message_set_actuator_control_target(msg);
 		break;
+
+    case MAVLINK_MSG_ID_SET_GIMBAL_REFERENCE_LOCAL_NED:
+        handle_message_set_gimbal_reference_local_ned(msg);
+        break;
 
 	case MAVLINK_MSG_ID_VISION_POSITION_ESTIMATE:
 		handle_message_vision_position_estimate(msg);
@@ -969,6 +974,31 @@ MavlinkReceiver::handle_message_set_control_target_local_ned(mavlink_message_t *
 			}
 		}
 	}
+}
+
+void
+MavlinkReceiver::handle_message_set_gimbal_reference_local_ned(mavlink_message_t *msg)
+{
+  mavlink_set_gimbal_reference_local_ned_t set_gimbal_reference_local_ned;
+  mavlink_msg_set_gimbal_reference_local_ned_decode(msg, &set_gimbal_reference_local_ned);
+
+  struct actuator_controls_s actuator_controls;
+  memset(&actuator_controls, 0, sizeof(actuator_controls));
+
+  if((set_gimbal_reference_local_ned.gimbal_mode == 1) || (set_gimbal_reference_local_ned.gimbal_mode == 2) || (set_gimbal_reference_local_ned.gimbal_mode == 3))
+  {
+    actuator_controls.control[5] = set_gimbal_reference_local_ned.pitch;
+    actuator_controls.control[6] = set_gimbal_reference_local_ned.yaw;
+    //MAPING !!! CHEKCK VALUES
+    //HOW TO SET MODE? TODO!!!
+    if (_actuator_gimbal_controls_pub < 0) {
+        _actuator_gimbal_controls_pub = orb_advertise(ORB_ID(actuator_controls_3), &actuator_controls);
+    } else {
+        orb_publish(ORB_ID(actuator_controls_3), _actuator_controls_pub, &actuator_controls);
+    }
+
+  }
+
 }
 
 void
