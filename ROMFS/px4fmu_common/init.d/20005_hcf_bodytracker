@@ -1,5 +1,10 @@
 #!nsh
 #
+# @name HCF body tracker
+#
+# @type AR drone
+#
+# @maintainer Stefan Stevsic <stewdza@gmail.com>
 # IMU mode for tests
 #
 echo "[init] 20005_hcf_bodytracker"

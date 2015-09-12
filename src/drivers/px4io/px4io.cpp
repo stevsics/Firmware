@@ -1009,7 +1009,7 @@ PX4IO::task_main()
 				orb_copy(ORB_ID(vehicle_command), _t_vehicle_command, &cmd);
 
 				// Check for a DSM pairing command
-				if (((int)cmd.command == vehicle_command_s::VEHICLE_CMD_START_RX_PAIR) && ((int)cmd.param1 == 0)) {
+				if (((uint32_t)cmd.command == vehicle_command_s::VEHICLE_CMD_START_RX_PAIR) && ((int)cmd.param1 == 0)) {
 					dsm_bind_ioctl((int)cmd.param2);
 				}
 			}
@@ -1114,6 +1114,44 @@ PX4IO::task_main()
 				}
 
 				(void)io_reg_set(PX4IO_PAGE_SETUP, PX4IO_P_SETUP_PWM_REVERSE, pwm_invert_mask);
+
+				float trim_val;
+				param_t parm_handle;
+
+				parm_handle = param_find("TRIM_ROLL");
+				if (parm_handle != PARAM_INVALID) {
+					param_get(parm_handle, &trim_val);
+					(void)io_reg_set(PX4IO_PAGE_SETUP, PX4IO_P_SETUP_TRIM_ROLL, FLOAT_TO_REG(trim_val));
+				}
+
+				parm_handle = param_find("TRIM_PITCH");
+				if (parm_handle != PARAM_INVALID) {
+					param_get(parm_handle, &trim_val);
+					(void)io_reg_set(PX4IO_PAGE_SETUP, PX4IO_P_SETUP_TRIM_PITCH, FLOAT_TO_REG(trim_val));
+				}
+
+				parm_handle = param_find("TRIM_YAW");
+				if (parm_handle != PARAM_INVALID) {
+					param_get(parm_handle, &trim_val);
+					(void)io_reg_set(PX4IO_PAGE_SETUP, PX4IO_P_SETUP_TRIM_YAW, FLOAT_TO_REG(trim_val));
+				}
+
+				/* S.BUS output */
+				int sbus_mode;
+				parm_handle = param_find("PWM_SBUS_MODE");
+				if (parm_handle != PARAM_INVALID) {
+					param_get(parm_handle, &sbus_mode);
+					if (sbus_mode == 1) {
+						/* enable S.BUS 1 */
+						(void)io_reg_modify(PX4IO_PAGE_SETUP, PX4IO_P_SETUP_FEATURES, 0, PX4IO_P_SETUP_FEATURES_SBUS1_OUT);
+					} else if (sbus_mode == 2) {
+						/* enable S.BUS 2 */
+						(void)io_reg_modify(PX4IO_PAGE_SETUP, PX4IO_P_SETUP_FEATURES, 0, PX4IO_P_SETUP_FEATURES_SBUS2_OUT);
+					} else {
+						/* disable S.BUS */
+						(void)io_reg_modify(PX4IO_PAGE_SETUP, PX4IO_P_SETUP_FEATURES, (PX4IO_P_SETUP_FEATURES_SBUS1_OUT | PX4IO_P_SETUP_FEATURES_SBUS2_OUT), 0);
+					}
+				}
 			}
 
 		}
@@ -1240,7 +1278,7 @@ PX4IO::io_set_arming_state()
 	uint16_t set = 0;
 	uint16_t clear = 0;
 
-    if (have_armed == OK) {
+	if (have_armed == OK) {
 		_in_esc_calibration_mode = armed.in_esc_calibration_mode;
 		if (armed.armed || _in_esc_calibration_mode) {
 			set |= PX4IO_P_SETUP_ARMING_FMU_ARMED;
@@ -2127,7 +2165,14 @@ PX4IO::print_status(bool extended_status)
 	for (unsigned i = 0; i < _max_actuators; i++) {
 		printf("%s", (pwm_invert_mask & (1 << i)) ? "x" : "_");
 	}
-	printf("]\n");
+	printf("]");
+
+	float trim_roll = REG_TO_FLOAT(io_reg_get(PX4IO_PAGE_SETUP, PX4IO_P_SETUP_TRIM_ROLL));
+	float trim_pitch = REG_TO_FLOAT(io_reg_get(PX4IO_PAGE_SETUP, PX4IO_P_SETUP_TRIM_PITCH));
+	float trim_yaw = REG_TO_FLOAT(io_reg_get(PX4IO_PAGE_SETUP, PX4IO_P_SETUP_TRIM_YAW));
+
+	printf(" trims: r: %8.4f p: %8.4f y: %8.4f\n",
+		(double)trim_roll, (double)trim_pitch, (double)trim_yaw);
 
 	uint16_t raw_inputs = io_reg_get(PX4IO_PAGE_RAW_RC_INPUT, PX4IO_P_RAW_RC_COUNT);
 	printf("%d raw R/C inputs", raw_inputs);

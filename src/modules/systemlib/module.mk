@@ -42,6 +42,7 @@ SRCS		 = err.c \
 		   bson/tinybson.c \
 		   conversions.c \
 		   cpuload.c \
+		   printload.c \
 		   getopt_long.c \
 		   up_cxxinitialize.c \
 		   pid/pid.c \
@@ -55,8 +56,7 @@ SRCS		 = err.c \
 		   pwm_limit/pwm_limit.c \
 		   circuit_breaker.cpp \
 		   circuit_breaker_params.c \
-		   mcu_version.c \
-		   $(BUILD_DIR)git_version.c
+		   mcu_version.c
 
 MAXOPTIMIZATION	 = -Os
 

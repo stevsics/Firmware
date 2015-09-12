@@ -1,6 +1,6 @@
 /****************************************************************************
  *
- *   Copyright (C) 2012-2013 PX4 Development Team. All rights reserved.
+ *   Copyright (c) 2015 PX4 Development Team. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -32,39 +32,34 @@
  ****************************************************************************/
 
 /**
- * @file navigation_capabilities.h
+ * @file printload.h
  *
- * Definition of navigation capabilities uORB topic.
+ * Print the current system load.
+ *
+ * @author Lorenz Meier <lorenz@px4.io>
  */
 
-#ifndef TOPIC_NAVIGATION_CAPABILITIES_H_
-#define TOPIC_NAVIGATION_CAPABILITIES_H_
+#pragma once
 
-#include "../uORB.h"
+__BEGIN_DECLS
+
 #include <stdint.h>
 
-/**
- * @addtogroup topics
- * @{
- */
+struct print_load_s {
+	uint64_t total_user_time;
 
-/**
- * Airspeed
- */
-struct navigation_capabilities_s {
-	float turn_distance;		/**< the optimal distance to a waypoint to switch to the next */
+	int running_count;
+	int blocked_count;
 
-	/* Landing parameters: see fw_pos_control_l1/landingslope.h */
-	float landing_horizontal_slope_displacement;
-	float landing_slope_angle_rad;
-	float landing_flare_length;
+	uint64_t new_time;
+	uint64_t interval_start_time;
+	uint64_t last_times[CONFIG_MAX_TASKS];
+	float curr_loads[CONFIG_MAX_TASKS];
+	float interval_time_ms_inv;
 };
 
-/**
- * @}
- */
+__EXPORT void init_print_load_s(uint64_t t, struct print_load_s *s);
 
-/* register this as object request broker structure */
-ORB_DECLARE(navigation_capabilities);
+__EXPORT void print_load(uint64_t t, int fd, struct print_load_s *print_state);
 
-#endif
+__END_DECLS

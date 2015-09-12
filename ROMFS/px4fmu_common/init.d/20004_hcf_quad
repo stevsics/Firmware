@@ -1,5 +1,10 @@
 #!nsh
 #
+# @name HCF w quvad
+#
+# @type Quadrotor Wide
+#
+# @maintainer Stefan Stevsic <stewdza@gmail.com>
 # HCF H quad
 #
 

@@ -132,6 +132,12 @@ void get_mavlink_mode_state(struct vehicle_status_s *status, struct position_set
 			custom_mode.main_mode = PX4_CUSTOM_MAIN_MODE_ACRO;
 			break;
 
+		case vehicle_status_s::NAVIGATION_STATE_STAB:
+			*mavlink_base_mode |= MAV_MODE_FLAG_MANUAL_INPUT_ENABLED
+								  | MAV_MODE_FLAG_STABILIZE_ENABLED;
+			custom_mode.main_mode = PX4_CUSTOM_MAIN_MODE_STABILIZED;
+			break;
+
 		case vehicle_status_s::NAVIGATION_STATE_ALTCTL:
 			*mavlink_base_mode |= MAV_MODE_FLAG_MANUAL_INPUT_ENABLED
 			                      | MAV_MODE_FLAG_STABILIZE_ENABLED;
@@ -1763,6 +1769,10 @@ protected:
 			msg.x = pos_sp.x;
 			msg.y = pos_sp.y;
 			msg.z = pos_sp.z;
+			msg.yaw = pos_sp.yaw;
+			msg.vx = pos_sp.vx;
+			msg.vy = pos_sp.vy;
+			msg.vz = pos_sp.vz;
 
 			_mavlink->send_message(MAVLINK_MSG_ID_POSITION_TARGET_LOCAL_NED, &msg);
 		}

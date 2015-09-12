@@ -49,3 +49,4 @@ unittests/build
 .vagrant
 *.pretty
 xcode
+ROMFS/*/*/rc.autostart

@@ -1,5 +1,10 @@
 #!nsh
 #
+# @name HCF head tracker
+#
+# @type AR drone
+#
+# @maintainer Stefan Stevsic <stewdza@gmail.com>
 # IMU mode for tests
 #
 echo "[init] 20003_hcf_headtracker"

@@ -1,8 +1,12 @@
 #!nsh
 #
+# @name HCF ar drone min max
+#
+# @type AR drone
+#
+# @maintainer Stefan Stevsic <stewdza@gmail.com>
 # ARDrone
 #
-
 echo "[init] 20002_hcf_ardrone_minimax for HCF minimax scenario"
 
 # Just use the default multicopter settings.

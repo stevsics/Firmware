@@ -1,5 +1,10 @@
 #!nsh
 #
+# @name HCF solo drone
+#
+# @type Quadrotor x
+#
+# @maintainer Stefan Stevsic <stewdza@gmail.com>
 # Solo
 
 echo "[init] 20006_hcf_quad_solo for HCF"

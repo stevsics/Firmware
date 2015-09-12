@@ -35,9 +35,9 @@
  * @file mavlink_receiver.cpp
  * MAVLink protocol message receive and dispatch
  *
- * @author Lorenz Meier <lm@inf.ethz.ch>
- * @author Anton Babushkin <anton.babushkin@me.com>
- * @author Thomas Gubler <thomasgubler@gmail.com>
+ * @author Lorenz Meier <lorenz@px4.io>
+ * @author Anton Babushkin <anton@px4.io>
+ * @author Thomas Gubler <thomas@px4.io>
  */
 
 /* XXX trim includes */
@@ -134,7 +134,9 @@ MavlinkReceiver::MavlinkReceiver(Mavlink *parent) :
 	_att_sp{},
 	_rates_sp{},
 	_time_offset_avg_alpha(0.6),
-	_time_offset(0)
+	_time_offset(0),
+	_mom_switch_pos{},
+	_mom_switch_state(0)
 {
 
 }
@@ -201,6 +203,10 @@ MavlinkReceiver::handle_message(mavlink_message_t *msg)
 
 	case MAVLINK_MSG_ID_MANUAL_CONTROL:
 		handle_message_manual_control(msg);
+		break;
+
+	case MAVLINK_MSG_ID_RC_CHANNELS_OVERRIDE:
+		handle_message_rc_channels_override(msg);
 		break;
 
 	case MAVLINK_MSG_ID_HEARTBEAT:
@@ -630,7 +636,7 @@ MavlinkReceiver::handle_message_set_position_target_local_ned(mavlink_message_t 
 					}
 
 					/* set the yaw sp value */
-					if (!offboard_control_mode.ignore_attitude) {
+					if (!offboard_control_mode.ignore_attitude && !isnan(set_position_target_local_ned.yaw)) {
 						pos_sp_triplet.current.yaw_valid = true;
 						pos_sp_triplet.current.yaw = set_position_target_local_ned.yaw;
 
@@ -639,7 +645,7 @@ MavlinkReceiver::handle_message_set_position_target_local_ned(mavlink_message_t 
 					}
 
 					/* set the yawrate sp value */
-					if (!offboard_control_mode.ignore_bodyrate) {
+					if (!offboard_control_mode.ignore_bodyrate && !isnan(set_position_target_local_ned.yaw)) {
 						pos_sp_triplet.current.yawspeed_valid = true;
 						pos_sp_triplet.current.yawspeed = set_position_target_local_ned.yaw_rate;
 
@@ -1245,15 +1251,87 @@ MavlinkReceiver::handle_message_radio_status(mavlink_message_t *msg)
 	}
 }
 
-static switch_pos_t decode_switch_pos(uint16_t buttons, int sw) {
+switch_pos_t
+MavlinkReceiver::decode_switch_pos(uint16_t buttons, unsigned sw)
+{
+	// XXX non-standard 3 pos switch decoding
 	return (buttons >> (sw * 2)) & 3;
 }
 
-static int decode_switch_pos_n(uint16_t buttons, int sw) {
-	if (buttons & (1 << sw)) {
-		return 1;
+int
+MavlinkReceiver::decode_switch_pos_n(uint16_t buttons, unsigned sw)
+{
+
+	bool on = (buttons & (1 << sw));
+
+	if (sw < MOM_SWITCH_COUNT) {
+
+		bool last_on = (_mom_switch_state & (1 << sw));
+
+		/* first switch is 2-pos, rest is 2 pos */
+		unsigned state_count = (sw == 0) ? 3 : 2;
+
+		/* only transition on low state */
+		if (!on && (on != last_on)) {
+
+			_mom_switch_pos[sw]++;
+			if (_mom_switch_pos[sw] == state_count) {
+				_mom_switch_pos[sw] = 0;
+			}
+		}
+
+		/* state_count - 1 is the number of intervals and 1000 is the range,
+		 * with 2 states 0 becomes 0, 1 becomes 1000. With
+		 * 3 states 0 becomes 0, 1 becomes 500, 2 becomes 1000,
+		 * and so on for more states.
+		 */
+		return (_mom_switch_pos[sw] * 1000) / (state_count - 1) + 1000;
+
 	} else {
-		return 0;
+		/* return the current state */
+		return on * 1000 + 1000;
+	}
+}
+
+void
+MavlinkReceiver::handle_message_rc_channels_override(mavlink_message_t *msg)
+{
+	mavlink_rc_channels_override_t man;
+	mavlink_msg_rc_channels_override_decode(msg, &man);
+
+	// Check target
+	if (man.target_system != 0 && man.target_system != _mavlink->get_system_id()) {
+		return;
+	}
+
+	struct rc_input_values rc = {};
+	rc.timestamp_publication = hrt_absolute_time();
+	rc.timestamp_last_signal = rc.timestamp_publication;
+
+	rc.channel_count = 8;
+	rc.rc_failsafe = false;
+	rc.rc_lost = false;
+	rc.rc_lost_frame_count = 0;
+	rc.rc_total_frame_count = 1;
+	rc.rc_ppm_frame_length = 0;
+	rc.input_source = RC_INPUT_SOURCE_MAVLINK;
+	rc.rssi = RC_INPUT_RSSI_MAX;
+
+	/* channels */
+	rc.values[0] = man.chan1_raw;
+	rc.values[1] = man.chan2_raw;
+	rc.values[2] = man.chan3_raw;
+	rc.values[3] = man.chan4_raw;
+	rc.values[4] = man.chan5_raw;
+	rc.values[5] = man.chan6_raw;
+	rc.values[6] = man.chan7_raw;
+	rc.values[7] = man.chan8_raw;
+
+	if (_rc_pub <= 0) {
+		_rc_pub = orb_advertise(ORB_ID(input_rc), &rc);
+
+	} else {
+		orb_publish(ORB_ID(input_rc), _rc_pub, &rc);
 	}
 }
 
@@ -1293,7 +1371,7 @@ MavlinkReceiver::handle_message_manual_control(mavlink_message_t *msg)
 		 * which makes the corner positions unreachable.
 		 * scale yaw up and clip it to overcome this.
 		 */
-		rc.values[2] = man.r / 1.2f + 1500;
+		rc.values[2] = man.r / 1.1f + 1500;
 		if (rc.values[2] > 2000) {
 			rc.values[2] = 2000;
 		} else if (rc.values[2] < 1000) {
@@ -1301,14 +1379,25 @@ MavlinkReceiver::handle_message_manual_control(mavlink_message_t *msg)
 		}
 
 		/* throttle */
-		rc.values[3] = man.z + 1000;
+		rc.values[3] = man.z / 0.9f + 1000;
+		if (rc.values[3] > 2000) {
+			rc.values[3] = 2000;
+		} else if (rc.values[3] < 1000) {
+			rc.values[3] = 1000;
+		}
 
-		rc.values[4] = decode_switch_pos_n(man.buttons, 0) * 1000 + 1000;
-		rc.values[5] = decode_switch_pos_n(man.buttons, 1) * 1000 + 1000;
-		rc.values[6] = decode_switch_pos_n(man.buttons, 2) * 1000 + 1000;
-		rc.values[7] = decode_switch_pos_n(man.buttons, 3) * 1000 + 1000;
-		rc.values[8] = decode_switch_pos_n(man.buttons, 4) * 1000 + 1000;
-		rc.values[9] = decode_switch_pos_n(man.buttons, 5) * 1000 + 1000;
+		/* decode all switches which fit into the channel mask */
+		unsigned max_switch = (sizeof(man.buttons) * 8);
+		unsigned max_channels = (sizeof(rc.values) / sizeof(rc.values[0]));
+		if (max_switch > (max_channels - 4)) {
+			max_switch = (max_channels - 4);
+		}
+
+		/* fill all channels */
+		for (unsigned i = 0; i < max_switch; i++) {
+			rc.values[i + 4] = decode_switch_pos_n(man.buttons, i);
+		}
+		_mom_switch_state = man.buttons;
 
 		if (_rc_pub <= 0) {
 			_rc_pub = orb_advertise(ORB_ID(input_rc), &rc);
@@ -1632,6 +1721,7 @@ MavlinkReceiver::handle_message_hil_sensor(mavlink_message_t *msg)
 		hil_sensors.baro_timestamp = timestamp;
 
 		hil_sensors.differential_pressure_pa = imu.diff_pressure * 1e2f; //from hPa to Pa
+		hil_sensors.differential_pressure_filtered_pa = hil_sensors.differential_pressure_pa;
 		hil_sensors.differential_pressure_timestamp = timestamp;
 
 		/* publish combined sensor topic */
