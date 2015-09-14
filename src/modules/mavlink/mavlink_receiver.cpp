@@ -991,19 +991,22 @@ MavlinkReceiver::handle_message_set_gimbal_reference_local_ned(mavlink_message_t
   struct actuator_controls_s actuator_controls;
   memset(&actuator_controls, 0, sizeof(actuator_controls));
 
-  if((set_gimbal_reference_local_ned.gimbal_mode == 1) || (set_gimbal_reference_local_ned.gimbal_mode == 2) || (set_gimbal_reference_local_ned.gimbal_mode == 3))
-  {
-    actuator_controls.control[5] = set_gimbal_reference_local_ned.pitch;
-    actuator_controls.control[6] = set_gimbal_reference_local_ned.yaw;
+  //if((set_gimbal_reference_local_ned.gimbal_mode == 1) || (set_gimbal_reference_local_ned.gimbal_mode == 2) || (set_gimbal_reference_local_ned.gimbal_mode == 3))
+  //{
+    actuator_controls.control[0] = set_gimbal_reference_local_ned.pitch;
+    actuator_controls.control[1] = set_gimbal_reference_local_ned.yaw;
+    actuator_controls.control[2] = 0.0;
+    actuator_controls.control[3] = 0.0;
+    //warnx("received commands: %2.4f %2.4f", double(actuator_controls.control[5]) , double(actuator_controls.control[6]));
     //MAPING !!! CHEKCK VALUES
     //HOW TO SET MODE? TODO!!!
     if (_actuator_gimbal_controls_pub < 0) {
         _actuator_gimbal_controls_pub = orb_advertise(ORB_ID(actuator_controls_3), &actuator_controls);
     } else {
-        orb_publish(ORB_ID(actuator_controls_3), _actuator_controls_pub, &actuator_controls);
+        orb_publish(ORB_ID(actuator_controls_3), _actuator_gimbal_controls_pub, &actuator_controls);
     }
 
-  }
+  //}
 
 }
 

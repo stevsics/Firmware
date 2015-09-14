@@ -478,7 +478,7 @@ then
 		fi
 	fi
 
-	#mavlink start $MAVLINK_F  -- HACK TRY TO STOP IT BY SETTING MAVLINK_F TO SOMETHING ELSE
+	mavlink start $MAVLINK_F
 	unset MAVLINK_F
 
 	#
