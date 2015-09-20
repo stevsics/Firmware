@@ -38,6 +38,8 @@ set MAV_TYPE 2
 
 set LOAD_DAPPS no
 set HCF yes
+set HCF_VICON no
+set GPS yes
 
 # higher baudrate for lairdtech on serial 1
 # send some standard mavlink messages
