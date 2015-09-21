@@ -181,7 +181,7 @@ MulticopterAttitudeControlHcf::update()
 		if(use_no_yaw) {
 			vehicle_attitude_s att_no_yaw = _att.getData();
 			att_no_yaw.yaw = 0.0f;
-			math::Matrix<3, 3> R_IB_no_yaw;
+			math::Matrix<3, 3> R_IB_no_yaw;// is this fast?????
 			R_IB_no_yaw.from_euler(att_no_yaw.roll, att_no_yaw.pitch, att_no_yaw.yaw);
 			for(int i=0; i < 3; i++)
 				for(int j=0; j < 3; j++)
@@ -196,6 +196,8 @@ MulticopterAttitudeControlHcf::update()
 			/* Rate control */
 			_rateController.update(_attitudeController.getRatesSp(), _attitudeController.getThrustSp(),
 				math::Vector<3>({att_no_yaw.rollspeed, att_no_yaw.pitchspeed, att_no_yaw.yawspeed}));
+
+			// consider using raw giro for rate controller to reduce latency effect!!!! - check in qgroundcontrol
 		}
 		else {
 			/*Attitude Control */

@@ -59,7 +59,7 @@
 #include <drivers/drv_hrt.h>
 #include <systemlib/perf_counter.h>
 
-#include "codegen/attitudeController.h"
+#include "codegen/attitude_controller.h"
 
 class InputLoader : public control::SuperBlock
 {

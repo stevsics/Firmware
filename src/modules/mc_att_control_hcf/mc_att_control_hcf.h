@@ -55,7 +55,7 @@
 #include <drivers/drv_hrt.h>
 #include <systemlib/perf_counter.h>
 
-#include "codegen/attitudeController.h"
+#include "codegen/attitude_controller.h"
 #include "inputloader.h"
 #include "rate_controller.h"
 #include "attitude_controller.h"

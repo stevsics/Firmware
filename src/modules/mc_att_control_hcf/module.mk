@@ -43,7 +43,7 @@ SRCS		= mc_att_control_hcf_main.cpp \
 			  inputloader.cpp \
 			  attitude_controller.cpp \
 			  rate_controller.cpp \
-			  codegen/attitudeController.cpp \
+			  codegen/attitude_controller.cpp \
 			  codegen/rt_nonfinite.cpp \
 			  codegen/rtGetInf.cpp \
 			  codegen/rtGetNaN.cpp
