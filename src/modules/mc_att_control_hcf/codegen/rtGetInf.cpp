@@ -1,8 +1,11 @@
-/* 
- * File: rtGetInf.cpp 
- *  
- * MATLAB Coder version            : 2.7 
- * C/C++ source code generated on  : 16-Dec-2014 15:07:04 
+/*
+ * Academic License - for use in teaching, academic research, and meeting
+ * course requirements at degree granting institutions only.  Not for
+ * government, commercial, or other organizational use.
+ * File: rtGetInf.cpp
+ *
+ * MATLAB Coder version            : 2.8
+ * C/C++ source code generated on  : 21-Sep-2015 14:29:20
  */
 
 /*
@@ -10,7 +13,7 @@
  *       MATLAB for code generation function to initialize non-finite, Inf and MinusInf
  */
 #include "rtGetInf.h"
-#define NumBitsPerChar	8U
+#define NumBitsPerChar                 8U
 
 /* Function: rtGetInf ==================================================
  * Abstract:
@@ -134,8 +137,8 @@ real32_T rtGetMinusInfF(void)
   return minfF.wordL.wordLreal;
 }
 
-/* 
- * File trailer for rtGetInf.cpp 
- *  
- * [EOF] 
+/*
+ * File trailer for rtGetInf.cpp
+ *
+ * [EOF]
  */

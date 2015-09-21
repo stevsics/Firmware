@@ -56,7 +56,7 @@
 #include <systemlib/perf_counter.h>
 #include <uORB/topics/vehicle_rates_setpoint.h>
 
-#include "codegen/attitudeController.h"
+#include "codegen/attitude_controller.h"
 
 class AttitudeController : public control::SuperBlock
 {
